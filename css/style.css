@@ -1,4 +1,4 @@
-/* 魔塔 24层 · 网页版 — retro dark theme, no external assets */
+﻿/* 魔塔 24层 — retro dark theme, no external assets */
 
 :root {
   color-scheme: dark;
@@ -441,3 +441,5 @@ button:disabled { opacity: .35; cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+

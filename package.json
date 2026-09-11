@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "mota-web",
   "version": "1.0.0",
-  "description": "魔塔 v1.12 (24层) 网页复刻版 — zero-dependency HTML5 remake of the classic Magic Tower",
+  "description": "魔塔 v1.12 (24层) 重制版 — zero-dependency HTML5 remake of the classic Magic Tower",
   "type": "module",
   "private": true,
   "scripts": {
@@ -16,3 +16,5 @@
   },
   "license": "MIT"
 }
+
+

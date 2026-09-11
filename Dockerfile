@@ -1,5 +1,5 @@
-# syntax=docker/dockerfile:1
-# 魔塔 24层 网页版 — single tiny image: static game + Go leaderboard server.
+﻿# syntax=docker/dockerfile:1
+# 魔塔 24层 — single tiny image: static game + Go leaderboard server.
 # Build off-server when the target has only 1 CPU / 1 GB RAM.
 
 FROM golang:1.26-alpine AS build
@@ -30,3 +30,5 @@ EXPOSE 8001
 VOLUME ["/app/data"]
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s CMD wget -qO- http://127.0.0.1:8001/api/health >/dev/null || exit 1
 ENTRYPOINT ["/app/mota-server"]
+
+
