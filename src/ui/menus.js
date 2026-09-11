@@ -2,6 +2,7 @@
 // help and the ending screens.  Each function receives the game controller.
 
 import { FLOORS } from '../data/floors.js';
+import { MODE_CASUAL, MODE_CLASSIC, MODES, modeInfo } from '../data/mode.js';
 import { specialText } from '../data/monsters.js';
 import { forecast, describeDamage, dangerLevel } from '../engine/combat.js';
 import { floorMonsters } from '../engine/move.js';
@@ -77,7 +78,8 @@ function slotLabel(meta, i) {
   if (!meta) return { label: name, detail: '（空）' };
   const when = new Date(meta.savedAt);
   const time = `${when.getMonth() + 1}/${when.getDate()} ${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`;
-  return { label: `${name} · 第 ${meta.floorName} 层`, detail: `Lv${meta.lv} HP${meta.hp} 攻${meta.atk} 防${meta.def} · ${formatTime(meta.playMs)} · ${time}` };
+  const mode = modeInfo(meta.mode).short;
+  return { label: `${name} · 第 ${meta.floorName} 层`, detail: `${mode} · Lv${meta.lv} HP${meta.hp} 攻${meta.atk} 防${meta.def} · ${formatTime(meta.playMs)} · ${time}` };
 }
 
 export function showSaveMenu(game, mode, onClose = () => game.closeMenu()) {
@@ -113,7 +115,7 @@ export function showSystemMenu(game) {
       { label: '探索排行榜', detail: '最高到达楼层', value: 'board' },
       { label: '设置', detail: '音效与操作', value: 'settings' },
       { label: '帮助', detail: '操作说明', value: 'help' },
-      { label: '重新开始', detail: '回到序章，从头开局', value: 'restart' },
+      { label: '重新开始', detail: '选择模式，从头开局', value: 'restart' },
     ],
     onPick: (v) => {
       const open = {
@@ -160,7 +162,8 @@ export function showHelp(game, onClose = () => game.closeMenu()) {
     ['战斗规则', '勇者先手。攻击不高于怪物防御无法取胜；生命不足时也不会强制战斗。手册可以预估伤害。'],
     ['特殊怪物', '白衣武士吸血 1/4，灵法师吸血 1/3；麻衣法师附加 100 魔法伤害，红衣法师附加 300。'],
     ['成长与道具', '红、蓝宝石分别增加 3 攻击、3 防御；红、蓝药水增加 200、500 生命。装备属性拾取后立即生效。'],
-    ['深入魔塔', '击败 16、21 层魔王后，部分怪物会强化。21 层禁止传送且不能立即返回，请先存档。'],
+    ['冒险模式', '开局或重新开始时选择经典或休闲。经典为原版数值；休闲击杀金币与经验翻倍、开局钥匙更宽裕，且魔王死后怪物不再强化。中途不能切换。排行榜按到达楼层排列，不区分模式。'],
+    ['深入魔塔', '经典模式中，击败 16、21 层魔王后部分怪物会强化。21 层禁止传送且不能立即返回，请先存档。'],
     ['独立冒险', '每位玩家在自己的浏览器中游玩。存档保存在本机，排行榜只公开勇者名称与最高到达层数。'],
   ];
   game.overlay.showCollection('冒险指南', sections.map(([title, text]) =>
@@ -177,6 +180,7 @@ export function showEnding(game, ending) {
       ? '“血影”被彻底消灭，塔下的封印永远闭合。仙子带着公主走出了魔塔，而你的传说将被这座塔永远铭记。'
       : '冥灵魔王倒下了。仙子说，公主已经安全离开了魔塔——但塔的更深处，似乎还藏着什么……（21 层上方出现了通往隐藏层的楼梯）' }),
     h('table', { class: 'ending-stats' }, [
+      h('tr', {}, [h('td', { text: '模式' }), h('td', { text: modeInfo(state.mode).name })]),
       h('tr', {}, [h('td', { text: '用时' }), h('td', { text: formatTime(state.stats.playMs) })]),
       h('tr', {}, [h('td', { text: '步数' }), h('td', { text: state.stats.steps })]),
       h('tr', {}, [h('td', { text: '击杀' }), h('td', { text: state.stats.kills })]),
@@ -190,6 +194,39 @@ export function showEnding(game, ending) {
     ]),
   ]);
   game.overlay.showPanel(isTrue ? '魔塔 · 真结局' : '魔塔 · 通关', content, () => game.closeMenu(), 'ending-panel');
+}
+
+export function showModeSelect(game, { required = false } = {}) {
+  game.mustPickMode = required;
+  game.overlay.showMenu({
+    title: '选择冒险',
+    pageSize: 0,
+    closable: !required,
+    entries: [
+      { label: MODES[MODE_CLASSIC].name, detail: MODES[MODE_CLASSIC].detail, value: MODE_CLASSIC },
+      { label: MODES[MODE_CASUAL].name, detail: MODES[MODE_CASUAL].detail, value: MODE_CASUAL },
+    ],
+    onPick: (mode) => {
+      game.mustPickMode = false;
+      if (!required) {
+        try { game.saves.remove(0); } catch { /* ignore */ }
+      }
+      game.startNew({
+        heroName: game.state?.heroName,
+        adventurerId: game.state?.adventurerId,
+        mode,
+      });
+    },
+    onClose: () => {
+      if (required) {
+        showModeSelect(game, { required: true });
+        return;
+      }
+      game.mustPickMode = false;
+      game.closeMenu();
+    },
+    footer: required ? '请选择一种模式开始 · 开局后无法切换' : '选定后将清除自动存档并回到序章 · Esc 取消',
+  });
 }
 
 export async function showLeaderboard(game, onClose = () => game.closeMenu()) {

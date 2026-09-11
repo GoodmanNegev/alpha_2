@@ -8,9 +8,10 @@ import { move } from './move.js';
 import { chooseScript, closeShop, confirmScript, runScript, shopBuy } from './script.js';
 import { fly } from './floor.js';
 import { introScript } from '../data/story.js';
+import { MODE_CLASSIC } from '../data/mode.js';
 
-export function newGame(now = Date.now()) {
-  const state = createInitialState(now);
+export function newGame(now = Date.now(), mode = MODE_CLASSIC) {
+  const state = createInitialState(now, mode);
   return runScript(state, introScript(), [{ type: 'msg', text: '按方向键移动，撞向物品拾取、撞向怪物战斗。' }]);
 }
 

@@ -3,6 +3,7 @@
 import { T, isMonster } from '../data/tiles.js';
 import { forecast, describeDamage, dangerLevel } from '../engine/combat.js';
 import { monsterStats } from '../data/monsters.js';
+import { combatTier } from '../data/mode.js';
 import { SpriteAtlas, bigPart } from './sprites.js';
 import { TerrainAtlas, TILE_PX, isTerrain } from './terrain.js';
 
@@ -118,7 +119,7 @@ export class Renderer {
         if (!isMonster(tile)) continue;
         let info = cache.get(tile);
         if (!info) {
-          const r = forecast(state.hero, monsterStats(tile, state.tier));
+          const r = forecast(state.hero, monsterStats(tile, combatTier(state)));
           info = { text: describeDamage(r), color: DANGER_COLORS[dangerLevel(r, state.hero.hp)] };
           cache.set(tile, info);
         }

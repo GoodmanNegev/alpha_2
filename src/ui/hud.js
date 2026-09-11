@@ -2,6 +2,7 @@
 
 import { FLOORS } from '../data/floors.js';
 import { T } from '../data/tiles.js';
+import { isCasual, modeInfo } from '../data/mode.js';
 import { formatTime, h, spriteEl } from './dom.js';
 
 export class Hud {
@@ -57,7 +58,8 @@ export class Hud {
     const set = (id, v) => { if (this.els[id].textContent !== String(v)) this.els[id].textContent = String(v); };
     set('name', state.heroName || '无名勇士');
     set('floor', FLOORS[state.floor].name);
-    this.els.title.textContent = FLOORS[state.floor].title;
+    const title = FLOORS[state.floor].title;
+    this.els.title.textContent = isCasual(state) ? `${title} · ${modeInfo(state.mode).short}` : title;
     set('lv', hero.lv);
     set('hp', hero.hp);
     set('atk', hero.atk);

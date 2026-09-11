@@ -7,7 +7,7 @@ import { findPath } from './engine/path.js';
 import { Renderer } from './render/renderer.js';
 import { Hud } from './ui/hud.js';
 import { Overlay } from './ui/overlay.js';
-import { showEnding, showFly, showHelp, showLeaderboard, showManual, showSaveMenu, showSettings, showSystemMenu } from './ui/menus.js';
+import { showEnding, showFly, showHelp, showLeaderboard, showModeSelect, showManual, showSaveMenu, showSettings, showSystemMenu } from './ui/menus.js';
 import { detectApi, submitProgress } from './leaderboard.js';
 import { Input } from './input.js';
 import { Audio } from './audio.js';
@@ -76,23 +76,28 @@ export class Game {
       this.autosave(); // Persist identity assigned when migrating an older save.
       this.message('已恢复自动存档。按 H 查看帮助。');
     } else {
-      this.startNew();
+      this.promptMode({ required: true });
     }
   }
 
   startNew(identity = {}) {
-    const r = newGame(Date.now());
+    const r = newGame(Date.now(), identity.mode);
     this.setState({ ...r.state, ...identity });
     this.handleEffects(r.effects);
   }
 
+  promptMode({ required = false } = {}) {
+    showModeSelect(this, { required });
+  }
+
   restart(confirmed = false) {
-    if (!confirmed && !window.confirm('确定要从头开始吗？将回到序章，自动存档会被清除。手动存档不会删除。')) return;
-    try { this.saves.remove(0); } catch { /* ignore */ }
-    this.startNew({
-      heroName: this.state?.heroName,
-      adventurerId: this.state?.adventurerId,
-    });
+    if (this.mustPickMode) return;
+    if (!this.state) {
+      this.promptMode({ required: true });
+      return;
+    }
+    if (!confirmed && !window.confirm('确定要从头开始吗？将选择模式并回到序章。选定后自动存档会被清除，手动存档不会删除。')) return;
+    this.promptMode({ required: false });
   }
 
   setState(state) {
@@ -103,6 +108,7 @@ export class Game {
     if (this.input) this.input.held = null;
     this.overlay.close();
     this.busy = false;
+    this.mustPickMode = false;
     state = { ...state, heroName: state.heroName || '无名勇士', adventurerId: state.adventurerId || newAdventurerId() };
     this.state = state;
     this.viewState = state;
@@ -155,11 +161,12 @@ export class Game {
   }
 
   move(dir) {
-    if (this.overlay.open || this.busy) return;
+    if (!this.state || this.overlay.open || this.busy) return;
     this.apply({ type: 'MOVE', dir });
   }
 
   command(cmd) {
+    if (this.mustPickMode && cmd !== 'confirm' && cmd !== 'mute') return;
     switch (cmd) {
       case 'confirm': if (this.overlay.open) this.overlay.handleKey({ key: 'Enter' }); break;
       case 'manual': this.openMenu(() => showManual(this)); break;
@@ -179,7 +186,7 @@ export class Game {
   }
 
   openMenu(fn) {
-    if (this.busy) return;
+    if (this.busy || this.mustPickMode || !this.state) return;
     if (this.overlay.open) { this.closeMenu(); return; }
     if (this.state.pending) return; // never cover a running dialogue
     this.stopAutoMove();
@@ -188,6 +195,10 @@ export class Game {
 
   closeMenu() {
     this.overlay.close();
+    if (this.mustPickMode) {
+      this.promptMode({ required: true });
+      return;
+    }
     this.showPending(); // a dialogue may still be waiting underneath
   }
 

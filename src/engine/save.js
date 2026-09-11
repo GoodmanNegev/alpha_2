@@ -3,6 +3,7 @@
 // export/import codes short.
 
 import { FLOORS, FLOOR_COUNT } from '../data/floors.js';
+import { MODE_CASUAL, MODE_CLASSIC, normalizeMode } from '../data/mode.js';
 import { KNOWN_TILES } from '../data/tiles.js';
 import { SAVE_VERSION, createInitialState } from './state.js';
 
@@ -45,6 +46,7 @@ export function deserialize(json) {
     throw new Error('存档不是有效的 JSON');
   }
   if (!data || data.version !== SAVE_VERSION) throw new Error('存档版本不兼容');
+  if (data.mode !== undefined && data.mode !== MODE_CLASSIC && data.mode !== MODE_CASUAL) throw new Error('存档损坏：mode');
   assertHero(data.hero);
   if (data.heroName !== undefined && (typeof data.heroName !== 'string' || [...data.heroName].length > 16)) throw new Error('存档损坏：勇者名称');
   if (data.adventurerId !== undefined && (typeof data.adventurerId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(data.adventurerId))) throw new Error('存档损坏：勇者编号');
@@ -77,6 +79,7 @@ export function deserialize(json) {
     flags: { ...(data.flags ?? {}) },
     stats: { ...base.stats, ...stats },
     tier: data.tier,
+    mode: normalizeMode(data.mode),
     maps,
     pending: null,
   };
@@ -94,6 +97,7 @@ export function summarize(state, savedAt) {
     lv: state.hero.lv,
     playMs: state.stats.playMs,
     ending: state.ending,
+    mode: normalizeMode(state.mode),
   };
 }
 

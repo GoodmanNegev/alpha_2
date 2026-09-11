@@ -1,6 +1,7 @@
 import { T } from '../data/tiles.js';
 import { FLOORS } from '../data/floors.js';
 import { ITEMS, STORY_ITEMS } from '../data/items.js';
+import { modeInfo } from '../data/mode.js';
 import { h, spriteEl, formatTime } from './dom.js';
 
 /** Recover equipment history from map changes, including older saves. */
@@ -34,7 +35,8 @@ export function showProfile(game) {
   } }, [h('label', { for: 'hero-name', text: '勇者名称' }), h('div', { class: 'rename-fields' }, [name, h('button', { class: 'btn', type: 'submit', text: '保存名称' })]), status]);
   const rows = [
     ['等级', state.hero.lv], ['生命', state.hero.hp], ['攻击', state.hero.atk], ['防御', state.hero.def],
-    ['金币', state.hero.gold], ['经验', state.hero.exp], ['当前楼层', FLOORS[state.floor].title],
+    ['金币', state.hero.gold], ['经验', state.hero.exp], ['冒险模式', modeInfo(state.mode).name],
+    ['当前楼层', FLOORS[state.floor].title],
     ['最高到达', FLOORS[state.maxFloor].title], ['战胜怪物', state.stats.kills], ['冒险用时', formatTime(state.stats.playMs)],
   ];
   game.overlay.showPanel('勇者档案', [

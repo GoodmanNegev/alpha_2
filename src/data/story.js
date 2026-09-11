@@ -4,6 +4,7 @@
 
 import { T, DRAGON_PARTS, DRAGON_CORE, SHADOW_PARTS, SHADOW_CORE } from './tiles.js';
 import { setTile } from '../engine/state.js';
+import { CASUAL_INTRO_KEYS, isCasual } from './mode.js';
 
 const say = (who, text) => ({ t: 'say', who, text });
 const hero = (text) => say('hero', text);
@@ -53,6 +54,14 @@ export function introScript() {
     { t: 'hero', delta: { keys: { yellow: 1, blue: 1, red: 1 } } },
     sfx('item'),
     msg('得到黄、蓝、红钥匙各一把'),
+    {
+      t: 'if',
+      cond: isCasual,
+      then: [
+        { t: 'hero', delta: { keys: { ...CASUAL_INTRO_KEYS } } },
+        msg('休闲模式：仙子又给了你几把备用钥匙。'),
+      ],
+    },
     say('fairy', '勇敢地去吧，勇士！'),
     remove(5, 8),
     tile(0, 4, 8, T.FAIRY),
@@ -383,10 +392,12 @@ export function afterBattleScript(state, monsterId, x, y) {
   const f = state.floor;
   if (f === 16 && monsterId === 53) {
     return [
-      { t: 'tier', value: 1 },
+      ...(isCasual(state) ? [] : [{ t: 'tier', value: 1 }]),
       flag('boss16Killed'),
       say('redking', '可恶……公主……在十八层……'),
-      msg('打败了红衣魔王！塔内高层的怪物似乎变得更强了……'),
+      msg(isCasual(state)
+        ? '打败了红衣魔王！'
+        : '打败了红衣魔王！塔内高层的怪物似乎变得更强了……'),
     ];
   }
   if (f === 19 && monsterId === 59) {
@@ -398,7 +409,7 @@ export function afterBattleScript(state, monsterId, x, y) {
   if (f === 21 && monsterId === T.VAMPIRE_2) {
     return [
       say('boss', '啊……\n怎么可能，我怎么可能会被你打败呢！\n不，不要这样……'),
-      { t: 'tier', value: 2 },
+      ...(isCasual(state) ? [] : [{ t: 'tier', value: 2 }]),
       flag('boss21Killed'),
       tile(21, 4, 7, T.FLOOR),
       tile(21, 6, 7, T.FLOOR),

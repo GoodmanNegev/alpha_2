@@ -26,6 +26,7 @@ export class Overlay {
     const focus = this.returnFocus;
     this.returnFocus = null;
     this.mode = null;
+    this.allowClose = true;
     this.handlers = {};
     this.items = [];
     clear(this.root);
@@ -41,6 +42,7 @@ export class Overlay {
     if (!this.open) this.returnFocus = document.activeElement;
     clear(this.root);
     this.mode = mode;
+    this.allowClose = true;
     this.root.dataset.mode = mode;
     this.root.setAttribute('role', 'dialog');
     this.root.setAttribute('aria-modal', 'true');
@@ -123,7 +125,7 @@ export class Overlay {
   // ----------------------------------------------------------------- menu --
   /**
    * Generic vertical list menu.
-   * @param {{title:string, entries:{label:string, detail?:string, disabled?:boolean, value:any}[], onPick:(value:any)=>void, onClose:()=>void, footer?:string, pageSize?: number}} opts
+   * @param {{title:string, entries:{label:string, detail?:string, disabled?:boolean, value:any}[], onPick:(value:any)=>void, onClose:()=>void, footer?:string, pageSize?: number, closable?: boolean}} opts
    */
   showMenu(opts) {
     this.items = opts.entries.map((e, i) => h('li', {
@@ -132,13 +134,16 @@ export class Overlay {
     }, [h('span', { class: 'label', text: e.label }), e.detail ? h('span', { class: 'detail', text: e.detail }) : null]));
     this.menuEntries = opts.entries;
     this.cursor = Math.max(0, opts.entries.findIndex((e) => !e.disabled));
+    const closeBtn = opts.closable === false ? null : h('button', { class: 'close', text: '✕', dataset: { index: 'close' } });
     const box = h('div', { class: 'panel-box menu' }, [
-      h('div', { class: 'panel-title' }, [opts.title, h('button', { class: 'close', text: '✕', dataset: { index: 'close' } })]),
+      h('div', { class: 'panel-title' }, [opts.title, closeBtn]),
       h('ul', { class: 'choice-list' }, this.items),
       opts.footer ? h('div', { class: 'panel-footer', text: opts.footer }) : null,
     ]);
+    this.allowClose = true;
     this.handlers = { pick: (i) => opts.onPick(opts.entries[i].value), close: opts.onClose };
     this.show('menu', box);
+    this.allowClose = opts.closable !== false;
     const pageSize = opts.pageSize ?? 4;
     if (pageSize > 0 && this.items.length > pageSize) {
       const label = h('span', { 'aria-live': 'polite' });
@@ -305,7 +310,11 @@ export class Overlay {
   }
 
   activate(index) {
-    if (index === 'close') { this.handlers.close?.(); return; }
+    if (index === 'close') {
+      if (this.allowClose === false) return;
+      this.handlers.close?.();
+      return;
+    }
     const i = Number(index);
     if (Number.isNaN(i) || !this.items[i] || this.items[i].classList.contains('disabled')) return;
     this.handlers.pick?.(i);
@@ -334,7 +343,8 @@ export class Overlay {
       if (['Enter', ' ', 'z', 'Z', 'Escape'].includes(k)) this.handlers.next?.();
       return true;
     }
-    if (k === 'Escape' || k === 'x' || k === 'X') { this.handlers.close?.(); return true; }
+    if ((k === 'Escape' || k === 'x' || k === 'X') && this.allowClose !== false) { this.handlers.close?.(); return true; }
+    if ((k === 'Escape' || k === 'x' || k === 'X') && this.allowClose === false) return true;
     if (['ArrowLeft', 'PageUp'].includes(k) && this.handlers.page) { this.handlers.page(-1); return true; }
     if (['ArrowRight', 'PageDown'].includes(k) && this.handlers.page) { this.handlers.page(1); return true; }
     if (this.mode === 'panel') {

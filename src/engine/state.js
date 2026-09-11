@@ -1,4 +1,5 @@
 import { FLOORS, START_FLOOR } from '../data/floors.js';
+import { CASUAL_START_HERO, MODE_CLASSIC, normalizeMode } from '../data/mode.js';
 
 export const SAVE_VERSION = 3;
 
@@ -6,11 +7,14 @@ export const START_HERO = Object.freeze({
   hp: 1000, atk: 10, def: 10, gold: 0, exp: 0, lv: 1,
 });
 
-export function createInitialState(now = 0) {
+export function createInitialState(now = 0, mode = MODE_CLASSIC) {
   const start = FLOORS[START_FLOOR].start;
+  mode = normalizeMode(mode);
+  const stats = mode === MODE_CLASSIC ? START_HERO : CASUAL_START_HERO;
   return {
     version: SAVE_VERSION,
-    hero: { ...START_HERO, keys: { yellow: 0, blue: 0, red: 0 }, x: start[0], y: start[1], dir: 'up' },
+    mode,
+    hero: { ...stats, keys: { yellow: 0, blue: 0, red: 0 }, x: start[0], y: start[1], dir: 'up' },
     floor: START_FLOOR,
     maxFloor: START_FLOOR,
     visited: { [START_FLOOR]: true },

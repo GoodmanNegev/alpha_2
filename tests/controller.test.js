@@ -78,15 +78,22 @@ test('a second map click cancels the previous path timer', t => {
   assert.equal(game.autoPath, null);
 });
 
-test('restarting returns to the prologue and clears the autosave', () => {
+test('restarting asks for a mode then returns to the prologue', () => {
   const game = controller();
+  let menu;
+  game.overlay.showMenu = (opts) => { menu = opts; };
   game.overlay.showSay = () => {};
   game.overlay.root = { classList: { toggle() {} } };
   game.autosave();
   game.saves.save(2, game.state);
   game.restart(true);
+  assert.equal(game.saves.load(0).heroName, '勇者甲');
+  assert.equal(menu.title, '选择冒险');
+  assert.equal(menu.closable, true);
+  menu.onPick('classic');
   assert.equal(game.state.floor, 0);
   assert.ok(game.state.pending);
+  assert.equal(game.state.mode, 'classic');
   assert.equal(game.state.hero.hp, 1000);
   assert.equal(game.state.hero.atk, 10);
   assert.deepEqual(game.state.items, {});
@@ -94,6 +101,33 @@ test('restarting returns to the prologue and clears the autosave', () => {
   assert.equal(game.saves.load(2).heroName, '勇者甲');
   assert.equal(game.state.heroName, '勇者甲');
   assert.equal(game.state.adventurerId, '10000000-1000-4000-8000-000000000001');
+});
+
+test('restarting into casual keeps identity and uses the relaxed start', () => {
+  const game = controller();
+  let menu;
+  game.overlay.showMenu = (opts) => { menu = opts; };
+  game.overlay.showSay = () => {};
+  game.overlay.root = { classList: { toggle() {} } };
+  game.restart(true);
+  menu.onPick('casual');
+  assert.equal(game.state.mode, 'casual');
+  assert.equal(game.state.hero.hp, 1500);
+  assert.equal(game.state.hero.atk, 15);
+  assert.equal(game.state.heroName, '勇者甲');
+});
+
+test('cancelling the restart mode prompt leaves the current adventure', () => {
+  const game = controller();
+  let menu;
+  game.overlay.showMenu = (opts) => { menu = opts; };
+  game.overlay.root = { classList: { toggle() {} } };
+  game.autosave();
+  const hp = game.state.hero.hp;
+  game.restart(true);
+  menu.onClose();
+  assert.equal(game.state.hero.hp, hp);
+  assert.equal(game.saves.load(0).heroName, '勇者甲');
 });
 
 test('completing the prologue persists hero identity before first floor change', () => {

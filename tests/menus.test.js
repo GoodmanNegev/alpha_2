@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/game.js';
-import { showSaveMenu, showSystemMenu } from '../src/ui/menus.js';
+import { showModeSelect, showSaveMenu, showSystemMenu } from '../src/ui/menus.js';
 import { createSaveStore } from '../src/engine/save.js';
 
 function menuGame() {
@@ -30,6 +30,20 @@ test('picking restart from the system menu starts over', () => {
   showSystemMenu(game);
   game.shown[0].onPick('restart');
   assert.equal(restarts, 1);
+});
+
+test('a new adventure must pick classic or casual before the prologue', () => {
+  const game = menuGame();
+  const started = [];
+  game.startNew = (identity) => { started.push(identity); };
+  showModeSelect(game, { required: true });
+  assert.equal(game.mustPickMode, true);
+  assert.equal(game.shown[0].title, '选择冒险');
+  assert.equal(game.shown[0].closable, false);
+  assert.deepEqual(game.shown[0].entries.map(e => e.value), ['classic', 'casual']);
+  game.shown[0].onPick('casual');
+  assert.equal(game.mustPickMode, false);
+  assert.equal(started[0].mode, 'casual');
 });
 
 test('picking save from the system menu opens the save slots', () => {

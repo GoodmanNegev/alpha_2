@@ -53,6 +53,7 @@ test('save store keeps slots with metadata in the provided storage', () => {
   const slots = store.list();
   assert.equal(slots[2].floor, 3);
   assert.equal(slots[2].hp, 777);
+  assert.equal(slots[2].mode, 'classic');
   assert.equal(slots[2].savedAt, 5000);
   assert.equal(slots[1], null);
   const loaded = store.load(2);

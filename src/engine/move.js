@@ -7,6 +7,7 @@ import {
 import { FLOORS } from '../data/floors.js';
 import { ITEMS } from '../data/items.js';
 import { MONSTERS, monsterStats } from '../data/monsters.js';
+import { combatTier, killReward } from '../data/mode.js';
 import { forecast } from './combat.js';
 import { addStat, addToHero, patchHero, setItem, setTile, tileAt } from './state.js';
 import { goToFloor, resolveExit } from './floor.js';
@@ -91,7 +92,7 @@ function pickUp(state, x, y, tile) {
 }
 
 function fight(state, x, y, tile) {
-  const monster = monsterStats(tile, state.tier);
+  const monster = monsterStats(tile, combatTier(state));
   const result = forecast(state.hero, monster);
   if (!result.win) {
     return {
@@ -99,12 +100,13 @@ function fight(state, x, y, tile) {
       effects: [{ type: 'sfx', name: 'error' }, { type: 'msg', text: `打不过${monster.name}！` }],
     };
   }
-  let s = addToHero(state, { hp: -result.damage, gold: monster.gold, exp: monster.exp });
+  const reward = killReward(monster, state.mode);
+  let s = addToHero(state, { hp: -result.damage, gold: reward.gold, exp: reward.exp });
   s = setTile(s, s.floor, x, y, T.FLOOR);
   s = addStat(addStat(patchHero(s, { x, y }), 'steps'), 'kills');
   const effects = [
     { type: 'battle', monsterId: tile, monster, ...result, heroBefore: state.hero, heroAfter: s.hero },
-    { type: 'msg', text: `打败了${monster.name}，获得 ${monster.gold} 金币 ${monster.exp} 经验` },
+    { type: 'msg', text: `打败了${monster.name}，获得 ${reward.gold} 金币 ${reward.exp} 经验` },
   ];
   const script = afterBattleScript(s, tile, x, y);
   if (script) return runScript(s, script, effects);
@@ -125,7 +127,7 @@ export function floorMonsters(state) {
       const id = rows[y][x];
       if (!isMonster(id)) continue;
       if (!seen.has(id)) {
-        const monster = monsterStats(id, state.tier);
+        const monster = monsterStats(id, combatTier(state));
         seen.set(id, { id, monster, result: forecast(state.hero, monster), count: 0 });
       }
       seen.get(id).count++;
