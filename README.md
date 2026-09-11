@@ -1,4 +1,4 @@
-# 魔塔 · 24 层 网页版
+﻿# 魔塔 · 24 层 网页版
 
 经典《魔塔 v1.12（胖老鼠版，24 层）》的 HTML5 重制。游戏在浏览器运行，配套 Go 服务提供静态资源与探索排行榜，无前端构建步骤、无运行时第三方依赖。
 
@@ -8,7 +8,7 @@
 
 - 27 张地图，主塔、隐藏层与深渊；33 种怪物、NPC、商店及普通/真结局剧情。
 - 回合制战斗、钥匙开门、拾取成长、怪物强化、特殊伤害、怪物手册与楼层传送。
-- 一屏地图及工具栏，背包和排行榜点击打开弹框，长列表分页；支持键盘、点击寻路与触屏操作。
+- 一屏地图及主栏（手册、传送、背包、菜单），存档、排行榜、设置和帮助收在菜单里；长列表分页；支持键盘、点击寻路与触屏操作。
 - 点击勇者头像查看属性详情并改名；背包显示钥匙、当前持有的剧情道具和已生效装备（含 NPC 赠送/兑换）。
 - 5 个手动存档位和 1 个自动存档位、文本导入导出；旧版存档可读取，勇者名称和编号随存档保存。
 - 不同浏览器独立游玩；共享榜单只公开排名、名称、最高到达楼层，同层并列。相同名称不会合并不同勇者。
@@ -18,18 +18,15 @@
 
 ## 本地运行与测试
 
-需要 Node.js 20+；Go 服务需要 Go 1.26+。
+需要 Docker Engine 与 Docker Compose 插件。Node/Go 仅用于开发测试。
 
 ```bash
-npm run serve                # http://localhost:8080，仅本机静态试玩，无排行榜
-npm test                     # 53 个测试
-cd server
-go test ./...
-go vet ./...
-go run . -addr 127.0.0.1:8081 -static .. -data ../data/leaderboard.json
+npm test                     # 62 个测试
+docker compose -p mota config --quiet
+docker compose -p mota up -d --build
 ```
 
-访问 `http://localhost:8081/` 可试玩带排行榜的版本。ES Module 请通过 HTTP 服务加载，不建议直接双击 HTML。项目没有离线缓存机制，断网后能否重新打开取决于浏览器缓存。
+访问 `http://localhost:8001/` 可试玩带排行榜的版本。项目没有离线缓存机制，断网后能否重新打开取决于浏览器缓存。
 
 ## 操作
 
@@ -37,31 +34,15 @@ go run . -addr 127.0.0.1:8081 -static .. -data ../data/leaderboard.json
 | --- | --- |
 | 方向键 | 移动、开门、拾取、战斗或对话 |
 | Enter / 空格 / Z | 确认对话或菜单 |
-| Esc | 关闭弹框或停止寻路 |
+| Esc | 关闭弹框或停止寻路；从菜单进入的页面先返回菜单 |
 | B / C | 背包 / 勇者详情与改名 |
 | X / F | 怪物手册 / 楼层传送（需对应道具） |
 | S / L | 保存 / 读取进度 |
 | O / H / M / R | 设置 / 帮助 / 静音 / 重新开始 |
 
-菜单用上下键选择、左右键翻页；输入名称时快捷键不触发游戏操作。手机竖屏显示方向键，横屏可点击地图移动。21 层与隐藏层不能传送；进入不可返回区域前会保留进入前的自动存档。
+主栏四个按钮是手册、传送、背包和菜单。存档、排行榜、设置、帮助和重新开始在菜单中。菜单用上下键选择、左右键翻页；输入名称时快捷键不触发游戏操作。手机竖屏显示方向键，横屏可点击地图移动。21 层与隐藏层不能传送；进入不可返回区域前会保留进入前的自动存档。
 
-## 部署到 1C1G
-
-完整操作步骤见 [详细部署与运维指南](docs/DEPLOYMENT.md)，包含 Windows 编译上传、Linux 安装、Docker、HTTPS、验收、备份恢复和故障排查。
-
-计算和画面渲染在玩家浏览器完成，服务器只提供静态文件及低频榜单请求，适合轻量部署。容器和 systemd 示例限制服务为 64 MB 内存、0.5 核；这是资源上限，不是实测用量。建议在其他机器构建，再上传到小服务器。
-
-源码 + Docker Compose（推荐先在本机打包再传到服务器 A）：
-
-```powershell
-npm run pack:docker          # 生成 dist/mota-docker-src-*.tar.gz
-```
-
-在服务器 A 解压到 `/home/ubuntu/mota-docker` 后执行 `sudo bash deploy/deploy.sh docker`。详细步骤见 [部署指南第 5.2 节](docs/DEPLOYMENT.md)。服务监听 `8001`；数据在 Compose 命名卷中，升级时不要删除该卷。
-
-其他方式：`sudo bash deploy/deploy.sh binary` 安装 Go 二进制、systemd 与 nginx；`sudo bash deploy/deploy.sh static` 只安装静态站点（无榜单）。脚本会安装软件并替换本站 nginx 配置、移除默认站点链接；已有业务的服务器请按 [发布说明](docs/RELEASE.md) 手工配置。
-
-## API
+## 部署到 1C1G`r`n`r`n统一使用 Docker Compose 从源码构建：`docker compose -p mota up -d --build`。服务默认监听 8001，数据保存在命名卷 `mota-data`。不要使用 `docker compose down -v`。详细步骤见 [部署指南](docs/DEPLOYMENT.md)。`r`n`r`n## API
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
@@ -86,13 +67,13 @@ src/ui/              状态栏、背包、档案、弹框与菜单
 src/game.js          控制器、存读档、动画与进度同步
 tests/               引擎、剧情、存档、控制器与 API 客户端回归
 server/              Go 静态服务、榜单、限流与测试
-deploy/              nginx、systemd 与部署脚本
+docs/              Docker Compose 部署与发布说明
 tools/               地图生成、开发服务、可选浏览器冒烟脚本
 ```
 
 引擎入口为 `dispatch(state, action) → {state, effects}`。剧情全流程测试使用增强属性验证路线与事件连通性，不能代替正常数值下的平衡性试玩。
 
-`npm run gen:floors` 从 `tools/reference/` 生成地图。可选 `node tools/smoke.mjs http://localhost:8081/ ./shots` 需要另装 Playwright 和本机 Chrome；本轮未执行该脚本，浏览器验收通过交互试玩完成。
+`npm run gen:floors` 从 `tools/reference/` 生成地图。可选 `node tools/smoke.mjs http://localhost:8001/ ./shots` 需要另装 Playwright 和本机 Chrome；本轮未执行该脚本，浏览器验收通过交互试玩完成。
 
 ## 数据来源与差异
 
@@ -104,3 +85,6 @@ tools/               地图生成、开发服务、可选浏览器冒烟脚本
 ## 许可
 
 代码 MIT。原版《魔塔》版权归原作者所有，本项目用于学习与怀旧。
+
+
+

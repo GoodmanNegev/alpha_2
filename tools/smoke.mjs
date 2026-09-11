@@ -101,7 +101,8 @@ if (hasApi) {
   await page.waitForTimeout(200);
   await page.screenshot({ path: join(out, '12-ending.png') });
   await page.keyboard.press('Escape');
-  await page.click('[data-cmd="board"]');
+  await page.click('[data-cmd="menu"]');
+  await page.getByText('探索排行榜').click();
   await page.waitForTimeout(800);
   const rows = await page.locator('.ranking-row').count();
   console.log('board rows:', rows);

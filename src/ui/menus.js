@@ -80,7 +80,7 @@ function slotLabel(meta, i) {
   return { label: `${name} · 第 ${meta.floorName} 层`, detail: `Lv${meta.lv} HP${meta.hp} 攻${meta.atk} 防${meta.def} · ${formatTime(meta.playMs)} · ${time}` };
 }
 
-export function showSaveMenu(game, mode) {
+export function showSaveMenu(game, mode, onClose = () => game.closeMenu()) {
   const metas = game.saves.list();
   const entries = [];
   for (let i = 0; i < SLOT_COUNT; i++) {
@@ -97,12 +97,41 @@ export function showSaveMenu(game, mode) {
       if (mode === 'load') game.loadSlot(v);
       else game.saveSlot(v);
     },
-    onClose: () => game.closeMenu(),
+    onClose,
     footer: mode === 'load' ? '选择一个存档读取' : '自动存档会在切换楼层时写入',
   });
 }
 
-export function showSettings(game) {
+export function showSystemMenu(game) {
+  const back = () => showSystemMenu(game);
+  game.overlay.showMenu({
+    title: '菜单',
+    pageSize: 0,
+    entries: [
+      { label: '保存进度', detail: '写入当前冒险', value: 'save' },
+      { label: '读取进度', detail: '选择一份存档', value: 'load' },
+      { label: '探索排行榜', detail: '最高到达楼层', value: 'board' },
+      { label: '设置', detail: '音效与操作', value: 'settings' },
+      { label: '帮助', detail: '操作说明', value: 'help' },
+      { label: '重新开始', detail: '回到序章，从头开局', value: 'restart' },
+    ],
+    onPick: (v) => {
+      const open = {
+        save: () => showSaveMenu(game, 'save', back),
+        load: () => showSaveMenu(game, 'load', back),
+        board: () => showLeaderboard(game, back),
+        settings: () => showSettings(game, back),
+        help: () => showHelp(game, back),
+        restart: () => game.restart(),
+      };
+      open[v]?.();
+    },
+    onClose: () => game.closeMenu(),
+    footer: '手册、传送、背包在主栏 · Esc 关闭',
+  });
+}
+
+export function showSettings(game, onClose = () => game.closeMenu()) {
   const s = game.settings;
   const yn = (v) => (v ? '开' : '关');
   const entries = [
@@ -112,22 +141,21 @@ export function showSettings(game) {
     { label: '地图显示怪物伤害（需圣光徽）', detail: yn(s.showDamage), value: 'showDamage' },
     { label: '点击/触摸地图自动寻路', detail: yn(s.clickMove), value: 'clickMove' },
     { label: '移动速度', detail: s.moveMs <= 80 ? '快' : s.moveMs <= 120 ? '中' : '慢', value: 'moveMs' },
-    { label: '重新开始冒险', detail: '开始前会再次确认', value: 'restart' },
   ];
   game.overlay.showMenu({
     title: '设置',
     entries,
-    onPick: (k) => { if (k === 'restart') { game.restart(); return; } game.toggleSetting(k); showSettings(game); },
-    onClose: () => game.closeMenu(),
-    footer: 'Enter 切换 · Esc 返回',
+    onPick: (k) => { game.toggleSetting(k); showSettings(game, onClose); },
+    onClose,
+    footer: 'Enter 切换 · Esc 返回或关闭',
   });
 }
 
-export function showHelp(game) {
+export function showHelp(game, onClose = () => game.closeMenu()) {
   const sections = [
     ['移动与交互', '方向键移动，撞向物品拾取、撞门开锁、撞怪战斗。点击地图可以自动寻路。'],
-    ['对话与菜单', 'Enter / 空格 / Z 确认，Esc 关闭。菜单用 ↑↓ 选择；左右方向键或翻页按钮切换页面。'],
-    ['随身工具', 'B 背包，C 勇者详情，X 怪物手册，F 楼层传送。手册和传送需要先获得对应道具。'],
+    ['对话与菜单', 'Enter / 空格 / Z 确认，Esc 关闭。从「菜单」打开的页面会先返回菜单。列表用 ↑↓ 选择；左右方向键或翻页按钮切换页面。'],
+    ['随身工具', '主栏只有手册、传送和背包。其余在「菜单」里，包括重新开始。键盘：B 背包，C 勇者详情，X 怪物手册，F 楼层传送，R 重新开始。手册和传送需要先获得对应道具。'],
     ['保存冒险', 'S 存档，L 读档。切换楼层会自动保存；也可以在存读档菜单中导出或导入文本备份。'],
     ['战斗规则', '勇者先手。攻击不高于怪物防御无法取胜；生命不足时也不会强制战斗。手册可以预估伤害。'],
     ['特殊怪物', '白衣武士吸血 1/4，灵法师吸血 1/3；麻衣法师附加 100 魔法伤害，红衣法师附加 300。'],
@@ -137,7 +165,7 @@ export function showHelp(game) {
   ];
   game.overlay.showCollection('冒险指南', sections.map(([title, text]) =>
     h('article', { class: 'guide-card' }, [h('h3', { text: title }), h('p', { text })])
-  ), () => game.closeMenu());
+  ), onClose);
 }
 
 export function showEnding(game, ending) {
@@ -164,9 +192,9 @@ export function showEnding(game, ending) {
   game.overlay.showPanel(isTrue ? '魔塔 · 真结局' : '魔塔 · 通关', content, () => game.closeMenu(), 'ending-panel');
 }
 
-export async function showLeaderboard(game) {
+export async function showLeaderboard(game, onClose = () => game.closeMenu()) {
   const loading = h('p', { class: 'empty-state', text: '正在寻找其他勇者的足迹…' });
-  game.overlay.showPanel('探索排行榜', loading, () => game.closeMenu());
+  game.overlay.showPanel('探索排行榜', loading, onClose);
   try {
     if (!game.api) game.api = await detectApi();
     if (!loading.isConnected) return;
@@ -186,7 +214,7 @@ export async function showLeaderboard(game) {
       h('span', { class: 'rank-floor', text: FLOORS[r.floor]?.title || '未知楼层' }),
     ])) : [h('p', { class: 'empty-state', text: '还没有冒险记录，下一位登塔的勇者就是你。' })];
     if (!synced) cards.unshift(h('p', { class: 'collection-note', text: '你的最新进度暂未同步，以下为已保存的榜单。' }));
-    game.overlay.showCollection('探索排行榜 · 最高到达', cards, () => game.closeMenu());
+    game.overlay.showCollection('探索排行榜 · 最高到达', cards, onClose);
   } catch {
     if (loading.isConnected) loading.textContent = '排行榜暂时不可用，请稍后重新打开。';
   }

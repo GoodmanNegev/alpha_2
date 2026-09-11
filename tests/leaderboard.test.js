@@ -22,6 +22,17 @@ test('leaderboard timeout also aborts a stalled response body', async t => {
   assert.equal(signal.aborted, true);
 });
 
+test('leaderboard uses page-relative api paths so a /alpha_2/ subpath works', async t => {
+  let url;
+  t.mock.method(globalThis, 'fetch', async (reqUrl) => {
+    url = String(reqUrl);
+    return { status: 200, ok: true, json: async () => ({ success: true, data: [] }) };
+  });
+  await fetchProgress();
+  assert.equal(url.startsWith('/'), false);
+  assert.match(url, /^api\/progress/);
+});
+
 test('leaderboard reports server and malformed-response errors', async t => {
   t.mock.method(globalThis, 'fetch', async () => ({ status: 429, ok: false, json: async () => ({ success: false, error: '请求过于频繁' }) }));
   await assert.rejects(fetchProgress(), /请求过于频繁/);

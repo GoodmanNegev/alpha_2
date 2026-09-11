@@ -7,7 +7,7 @@ import { findPath } from './engine/path.js';
 import { Renderer } from './render/renderer.js';
 import { Hud } from './ui/hud.js';
 import { Overlay } from './ui/overlay.js';
-import { showEnding, showFly, showHelp, showLeaderboard, showManual, showSaveMenu, showSettings } from './ui/menus.js';
+import { showEnding, showFly, showHelp, showLeaderboard, showManual, showSaveMenu, showSettings, showSystemMenu } from './ui/menus.js';
 import { detectApi, submitProgress } from './leaderboard.js';
 import { Input } from './input.js';
 import { Audio } from './audio.js';
@@ -80,16 +80,19 @@ export class Game {
     }
   }
 
-  startNew() {
+  startNew(identity = {}) {
     const r = newGame(Date.now());
-    this.setState(r.state);
+    this.setState({ ...r.state, ...identity });
     this.handleEffects(r.effects);
   }
 
   restart(confirmed = false) {
-    if (!confirmed && !window.confirm('确定要重新开始吗？当前未保存的进度会丢失。')) return;
-    this.overlay.close();
-    this.startNew();
+    if (!confirmed && !window.confirm('确定要从头开始吗？将回到序章，自动存档会被清除。手动存档不会删除。')) return;
+    try { this.saves.remove(0); } catch { /* ignore */ }
+    this.startNew({
+      heroName: this.state?.heroName,
+      adventurerId: this.state?.adventurerId,
+    });
   }
 
   setState(state) {
@@ -167,6 +170,7 @@ export class Game {
       case 'help': this.openMenu(() => showHelp(this)); break;
       case 'board': this.openMenu(() => showLeaderboard(this)); break;
       case 'bag': this.openMenu(() => showBag(this)); break;
+      case 'menu': this.openMenu(() => showSystemMenu(this)); break;
       case 'profile': this.openMenu(() => showProfile(this)); break;
       case 'mute': this.toggleSetting('sfx'); this.settings.bgm = this.settings.sfx; this.audio.setBgm(this.settings.bgm); saveSettings(this.settings); this.message(this.settings.sfx ? '声音：开' : '声音：关'); break;
       case 'restart': this.restart(); break;
@@ -381,6 +385,24 @@ export class Game {
     ta.focus();
   }
 
+  syncTools(state) {
+    if (!this.toolButtons) {
+      this.toolButtons = {
+        manual: this.root.querySelector('[data-cmd="manual"]'),
+        fly: this.root.querySelector('[data-cmd="fly"]'),
+      };
+    }
+    const lock = (btn, locked, wait, ready) => {
+      if (!btn) return;
+      btn.classList.toggle('locked', locked);
+      const label = locked ? wait : ready;
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    };
+    lock(this.toolButtons.manual, !state.items.manual, '尚未获得圣光徽', '怪物手册（X）');
+    lock(this.toolButtons.fly, !state.items.fly, '尚未获得风之罗盘', '楼层传送（F）');
+  }
+
   // ----------------------------------------------------------------- clock --
   tickClock() {
     if (!this.state || this.state.ending === 'true' || document.hidden) return;
@@ -400,6 +422,7 @@ export class Game {
       now: performance.now(),
     });
     this.hud.update(s);
+    this.syncTools(s);
     if (this.renderer.flash && performance.now() < this.renderer.flash.until) this.dirty = true;
   }
 }

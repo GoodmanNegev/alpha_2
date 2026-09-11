@@ -17,7 +17,11 @@ function controller() {
     overlay: { close() {}, mode: null, open: false },
     audio: { play() {} }, hud: { update() {} }, message() {},
     renderer: { highlight() {} }, input: { held: null },
-    saves: createSaveStore({ getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, v) }),
+    saves: createSaveStore({
+      getItem: k => data.get(k) ?? null,
+      setItem: (k, v) => data.set(k, v),
+      removeItem: k => { data.delete(k); },
+    }),
   });
 }
 
@@ -72,6 +76,24 @@ test('a second map click cancels the previous path timer', t => {
   t.mock.timers.tick(200);
   assert.equal(steps, 0);
   assert.equal(game.autoPath, null);
+});
+
+test('restarting returns to the prologue and clears the autosave', () => {
+  const game = controller();
+  game.overlay.showSay = () => {};
+  game.overlay.root = { classList: { toggle() {} } };
+  game.autosave();
+  game.saves.save(2, game.state);
+  game.restart(true);
+  assert.equal(game.state.floor, 0);
+  assert.ok(game.state.pending);
+  assert.equal(game.state.hero.hp, 1000);
+  assert.equal(game.state.hero.atk, 10);
+  assert.deepEqual(game.state.items, {});
+  assert.equal(game.saves.load(0), null);
+  assert.equal(game.saves.load(2).heroName, '勇者甲');
+  assert.equal(game.state.heroName, '勇者甲');
+  assert.equal(game.state.adventurerId, '10000000-1000-4000-8000-000000000001');
 });
 
 test('completing the prologue persists hero identity before first floor change', () => {

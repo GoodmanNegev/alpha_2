@@ -247,10 +247,10 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 .noscript { text-align: center; padding: 40px; }
 
 /* Viewport shell: reserve space for controls; size the map from the remainder. */
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; min-width: 0; }
 .app {
-  width: min(1080px, calc(100% - 40px)); height: 100dvh; min-height: 0; margin: 0 auto;
-  padding: 18px 0 12px; display: grid;
+  width: min(1080px, calc(100% - 40px)); height: 100dvh; min-height: 0; min-width: 0; margin: 0 auto;
+  padding: 18px 0 12px; display: grid; justify-content: stretch;
   grid-template-columns: 232px minmax(0, 1fr);
   grid-template-rows: 60px minmax(0, 1fr) 64px 20px;
   grid-template-areas: "header header" "hud arena" "tools tools" "footer footer";
@@ -270,12 +270,16 @@ html, body { height: 100%; overflow: hidden; }
 .hero-seal .sprite { width: 40px; height: 40px; }
 .hud .keys { margin: 14px 0 8px; }
 .hud .time { font-size: 11px; }
-.toolbar { grid-area: tools; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
-.tool { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; padding: 10px 6px; border: 1px solid #536052; background: linear-gradient(135deg, #273832, #19272a); border-radius: 4px; cursor: pointer; font-size: 13px; transition: border-color .15s, background .15s; }
+.toolbar { grid-area: tools; display: flex; gap: 10px; min-width: 0; width: 100%; max-width: 100%; }
+.tool { display: flex; flex: 1 1 0; width: 0; align-items: center; justify-content: center; gap: 8px; min-width: 0; overflow: hidden; padding: 12px 8px; border: 1px solid #536052; background: linear-gradient(135deg, #273832, #19272a); border-radius: 4px; cursor: pointer; font-size: 14px; transition: border-color .15s, background .15s, opacity .15s; }
 .tool > span { font: 22px Georgia, serif; color: var(--gold); }
 .tool kbd { font-size: 9px; margin: 0; }
 .tool:hover { border-color: var(--gold); background: #304238; }
 .tool:active { transform: translateY(1px); }
+.tool.more { color: var(--dim); }
+.tool.more > span { font-size: 18px; color: var(--dim); }
+.tool.locked { opacity: .42; }
+.tool.locked:hover { opacity: .7; }
 .journey-footer { grid-area: footer; min-width: 0; align-items: center; font-size: 10px; }
 .latest-event { min-width: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 .dpad { display: none; }
@@ -344,8 +348,8 @@ button:disabled { opacity: .35; cursor: default; }
 }
 @media (max-width: 760px) {
   .app {
-    width: 100%; padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
-    grid-template-columns: minmax(0,1fr); grid-template-rows: 40px 112px minmax(0,1fr) 80px 102px;
+    width: 100%; max-width: 100%; min-width: 0; padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0,1fr); grid-template-rows: 40px 112px minmax(0,1fr) 48px 102px;
     grid-template-areas: "header" "hud" "arena" "tools" "dpad"; gap: 6px; height: 100dvh;
   }
   .masthead { padding: 0 4px 6px; gap: 8px; }
@@ -369,8 +373,8 @@ button:disabled { opacity: .35; cursor: default; }
   .hud .key { font-size: 11px; gap: 0; }
   .hud .key .sprite { width: 20px; height: 20px; }
   .hud .time { grid-column: 2; grid-row: 3; text-align: right; font-size: 9px; margin: 0; align-self: center; }
-  .toolbar { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 4px; }
-  .tool { padding: 5px 2px; gap: 6px; font-size: 11px; }
+  .toolbar { gap: 6px; }
+  .tool { padding: 8px 2px; gap: 4px; font-size: 12px; }
   .tool > span { font-size: 18px; }
   .dpad { grid-area: dpad; display: flex; position: static; justify-content: space-between; align-items: center; padding: 0 18px; background: none; }
   .dpad-cross { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 30px); gap: 3px; }
@@ -422,8 +426,8 @@ button:disabled { opacity: .35; cursor: default; }
   .hud dt, .hud dd { font-size: 11px; padding: 2px 0; line-height: 16px; }
   .hud .keys { margin: 6px 0 0; padding: 0; font-size: 10px; }
   .hud .key .sprite { width: 20px; height: 20px; }
-  .toolbar { grid-template-columns: repeat(2,minmax(0,1fr)); align-content: center; gap: 5px; }
-  .tool { flex-direction: column; gap: 1px; padding: 5px 1px; font-size: 10px; height: 48px; }
+  .toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: 5px; }
+  .tool { width: auto; flex: none; flex-direction: column; gap: 1px; padding: 5px 1px; font-size: 10px; height: 48px; }
   .tool kbd { display: none; }
   .profile-heading { display: none; }
   .profile-stats { gap: 5px 8px; font-size: 11px; }

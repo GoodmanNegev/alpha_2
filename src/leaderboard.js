@@ -25,7 +25,7 @@ async function call(path, init) {
 export async function detectApi() {
   if (!/^https?:$/.test(globalThis.location?.protocol ?? '')) return false;
   try {
-    const data = await call('/api/health');
+    const data = await call('api/health');
     return data?.status === 'ok';
   } catch {
     return false;
@@ -37,7 +37,7 @@ export function fetchBoard(ending = '', limit = 20) {
   const q = new URLSearchParams();
   if (ending) q.set('ending', ending);
   q.set('limit', String(limit));
-  return call(`/api/leaderboard?${q}`);
+  return call(`api/leaderboard?${q}`);
 }
 
 /** Builds the payload from a finished game state. */
@@ -56,17 +56,17 @@ export function scoreFrom(state, name) {
 }
 
 export function submitScore(entry) {
-  return call('/api/leaderboard', {
+  return call('api/leaderboard', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(entry),
   });
 }
 
-export function fetchProgress() { return call('/api/progress'); }
+export function fetchProgress() { return call('api/progress'); }
 
 export function submitProgress(state) {
-  return call('/api/progress', {
+  return call('api/progress', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: state.adventurerId, name: state.heroName, floor: state.maxFloor }),
   });

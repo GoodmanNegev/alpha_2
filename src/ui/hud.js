@@ -34,7 +34,7 @@ export class Hud {
     this.root.append(
       h('button', { class: 'hero-card', 'data-cmd': 'profile', title: '勇者详情与改名' }, [
         h('div', { class: 'hero-seal' }, [spriteEl(this.sprites.named('heroDown'), 'sprite')]),
-        h('div', { class: 'hero-identity' }, [this.els.name, h('div', { class: 'hero-caption', text: '勇者详情 · 点击改名' })]),
+        h('div', { class: 'hero-identity' }, [this.els.name, h('div', { class: 'hero-caption', text: '查看档案' })]),
         h('span', { class: 'profile-arrow', text: '›', 'aria-hidden': 'true' }),
       ]),
       h('div', { class: 'floor' }, ['第 ', this.els.floor, ' 层']),

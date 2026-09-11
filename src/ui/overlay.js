@@ -123,7 +123,7 @@ export class Overlay {
   // ----------------------------------------------------------------- menu --
   /**
    * Generic vertical list menu.
-   * @param {{title:string, entries:{label:string, detail?:string, disabled?:boolean, value:any}[], onPick:(value:any)=>void, onClose:()=>void, footer?:string}} opts
+   * @param {{title:string, entries:{label:string, detail?:string, disabled?:boolean, value:any}[], onPick:(value:any)=>void, onClose:()=>void, footer?:string, pageSize?: number}} opts
    */
   showMenu(opts) {
     this.items = opts.entries.map((e, i) => h('li', {
@@ -139,8 +139,8 @@ export class Overlay {
     ]);
     this.handlers = { pick: (i) => opts.onPick(opts.entries[i].value), close: opts.onClose };
     this.show('menu', box);
-    const pageSize = 4;
-    if (this.items.length > pageSize) {
+    const pageSize = opts.pageSize ?? 4;
+    if (pageSize > 0 && this.items.length > pageSize) {
       const label = h('span', { 'aria-live': 'polite' });
       const change = (delta) => {
         const page = (Math.floor(this.cursor / pageSize) + delta + Math.ceil(this.items.length / pageSize)) % Math.ceil(this.items.length / pageSize);
