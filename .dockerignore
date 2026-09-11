@@ -1,0 +1,8 @@
+# build context: only what the image needs
+*
+!Dockerfile
+!index.html
+!css/
+!src/
+!server/
+server/*_test.go

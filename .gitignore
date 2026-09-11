@@ -1,0 +1,10 @@
+node_modules/
+.gocache/
+dist/
+data/
+.env
+mota-server
+mota-server.exe
+*.log
+.DS_Store
+Thumbs.db

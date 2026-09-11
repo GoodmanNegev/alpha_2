@@ -1,0 +1,27 @@
+# docker compose up -d --build
+# Memory is capped at 64 MB; measure actual usage on the target server.
+services:
+  mota:
+    build: .
+    image: mota-web:latest
+    container_name: mota
+    restart: unless-stopped
+    ports:
+      - "${MOTA_BIND:-0.0.0.0}:${MOTA_PORT:-8001}:8001"
+    environment:
+      MOTA_TRUST_PROXY: "${MOTA_TRUST_PROXY:-0}"
+    volumes:
+      - mota-data:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  mota-data:

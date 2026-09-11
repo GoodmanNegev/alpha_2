@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10191e">
+  <meta name="description" content="魔塔 v1.12（24层）网页复刻版 —— 经典 Flash 魔塔的原汁原味 HTML5 重制，无需插件，支持手机。">
+  <title>魔塔 · 24层 网页版</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2314121a'/%3E%3Crect x='3' y='2' width='10' height='12' fill='%238b5a3c'/%3E%3Crect x='6' y='8' width='4' height='6' fill='%23f2c94c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="masthead">
+      <div class="brand"><span class="tower-mark" aria-hidden="true">♜</span><div><h1>魔塔<span>二十四层</span></h1><p>THE MAGIC TOWER</p></div></div>
+      <p class="masthead-note">一把剑，一座塔，一段未完的冒险。</p>
+    </header>
+    <aside id="hud" class="panel hud" aria-label="状态"></aside>
+
+    <main class="arena"><div class="stage">
+      <canvas id="map" width="352" height="352" aria-label="地图"></canvas>
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
+    </div></main>
+    <div id="overlay" class="overlay hidden"></div>
+
+    <nav class="toolbar" aria-label="冒险操作">
+      <button class="tool" data-cmd="bag"><span aria-hidden="true">▣</span>背包<kbd>B</kbd></button>
+      <button class="tool" data-cmd="manual"><span aria-hidden="true">◇</span>手册<kbd>X</kbd></button>
+      <button class="tool" data-cmd="fly"><span aria-hidden="true">↟</span>传送<kbd>F</kbd></button>
+      <button class="tool" data-cmd="board"><span aria-hidden="true">♜</span>排行榜</button>
+      <button class="tool" data-cmd="save"><span aria-hidden="true">↓</span>存档<kbd>S</kbd></button>
+      <button class="tool" data-cmd="load"><span aria-hidden="true">↑</span>读档<kbd>L</kbd></button>
+      <button class="tool" data-cmd="settings"><span aria-hidden="true">⚙</span>设置<kbd>O</kbd></button>
+      <button class="tool" data-cmd="help"><span aria-hidden="true">?</span>帮助<kbd>H</kbd></button>
+    </nav>
+    <footer class="journey-footer"><span>方向键移动 · 点击地图寻路</span><span id="log" class="latest-event" aria-label="最新消息">冒险从这里开始</span></footer>
+
+  <div id="dpad" class="dpad" aria-label="触屏控制">
+    <div class="dpad-cross">
+      <button data-dir="up" aria-label="上">▲</button>
+      <button data-dir="left" aria-label="左">◀</button>
+      <button data-dir="right" aria-label="右">▶</button>
+      <button data-dir="down" aria-label="下">▼</button>
+    </div>
+    <div class="dpad-actions">
+      <button data-cmd="confirm" class="round">确认</button>
+      <span class="touch-hint">对话 · 选择</span>
+    </div>
+  </div>
+  </div>
+
+  <noscript><p class="noscript">本游戏需要启用 JavaScript。</p></noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
