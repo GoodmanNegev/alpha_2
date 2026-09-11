@@ -250,7 +250,7 @@ func TestStaticFiles(t *testing.T) {
 
 func TestStaticRootDoesNotExposePrivateFiles(t *testing.T) {
 	dir := t.TempDir()
-	for _, name := range []string{"server/progress.go", "data/board.progress.json", "src/main.js", "css/style.css"} {
+	for _, name := range []string{"server/progress.go", "data/board.progress.json", "src/main.js", "src/engine/reducer.js", "css/style.css"} {
 		file := filepath.Join(dir, name)
 		if err := os.MkdirAll(filepath.Dir(file), 0755); err != nil {
 			t.Fatal(err)
@@ -267,11 +267,19 @@ func TestStaticRootDoesNotExposePrivateFiles(t *testing.T) {
 			t.Fatalf("private path %s returned %d", url, rec.Code)
 		}
 	}
-	for _, url := range []string{"/src/main.js", "/css/style.css"} {
+	for _, url := range []string{"/src/main.js", "/src/engine/reducer.js", "/css/style.css"} {
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, url, nil))
 		if rec.Code != http.StatusOK || rec.Header().Get("Cache-Control") != "no-cache" {
 			t.Fatalf("asset %s: status=%d cache=%s", url, rec.Code, rec.Header().Get("Cache-Control"))
+		}
+		ct := rec.Header().Get("Content-Type")
+		want := "text/javascript"
+		if strings.HasSuffix(url, ".css") {
+			want = "text/css"
+		}
+		if !strings.HasPrefix(ct, want) {
+			t.Fatalf("asset %s: Content-Type=%q, want prefix %q", url, ct, want)
 		}
 	}
 }

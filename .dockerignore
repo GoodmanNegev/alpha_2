@@ -2,7 +2,10 @@
 *
 !Dockerfile
 !index.html
-!css/
-!src/
-!server/
-server/*_test.go
+!css
+!css/**
+!src
+!src/**
+!server
+!server/**
+**/*_test.go

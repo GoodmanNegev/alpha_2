@@ -219,6 +219,14 @@ func staticHandler(dir string) http.Handler {
 			return
 		}
 		w.Header().Set("Cache-Control", "no-cache")
+		switch {
+		case strings.HasSuffix(clean, ".js"):
+			w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+		case strings.HasSuffix(clean, ".css"):
+			w.Header().Set("Content-Type", "text/css; charset=utf-8")
+		case clean == "/" || clean == "/index.html":
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		}
 		fs.ServeHTTP(w, r)
 	})
 }
