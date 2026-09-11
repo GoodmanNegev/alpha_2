@@ -16,7 +16,7 @@
   --display: "Palatino Linotype", "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
   --font: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", system-ui, sans-serif;
   --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --map-size: min(660px, calc(100vw - 508px), calc(100svh - 168px));
+  --map-size: min(660px, max(240px, calc(100vw - 508px)), calc(100svh - 168px));
 }
 
 * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #657268 #16232a; }

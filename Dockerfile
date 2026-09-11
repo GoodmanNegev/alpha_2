@@ -19,6 +19,11 @@ COPY --from=build /out/mota-server /app/mota-server
 COPY --chown=mota:mota index.html /app/public/
 COPY --chown=mota:mota css/ /app/public/css/
 COPY --chown=mota:mota src/ /app/public/src/
+RUN test -f /app/public/src/main.js \
+ && test -f /app/public/src/game.js \
+ && test -f /app/public/src/engine/reducer.js \
+ && test -f /app/public/src/data/floors.js \
+ && test -f /app/public/css/style.css
 USER mota
 ENV MOTA_ADDR=:8001 MOTA_STATIC=/app/public MOTA_DATA=/app/data/leaderboard.json MOTA_TRUST_PROXY=0
 EXPOSE 8001

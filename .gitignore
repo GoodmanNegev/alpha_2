@@ -1,7 +1,7 @@
 node_modules/
 .gocache/
 dist/
-data/
+/data/
 .env
 mota-server
 mota-server.exe
