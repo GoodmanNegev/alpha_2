@@ -68,7 +68,10 @@ export class Overlay {
       h('div', { class: 'dialog-body' }, [
         sp.name ? h('div', { class: 'dialog-name', text: sp.name }) : null,
         h('div', { class: 'dialog-text', text: step.text }),
-        h('div', { class: 'dialog-next', text: '▼' }),
+        h('div', { class: 'dialog-next' }, [
+          h('span', { class: 'hint-key', text: '▼' }),
+          h('span', { class: 'hint-touch', text: '点击屏幕继续' }),
+        ]),
       ]),
     ]);
     this.handlers = { next: onNext };
@@ -240,7 +243,10 @@ export class Overlay {
         stat('攻击', fx.heroBefore.atk),
         stat('防御', fx.heroBefore.def),
       ]),
-      h('div', { class: 'battle-hint', text: '按任意键跳过' }),
+      h('div', { class: 'battle-hint' }, [
+        h('span', { class: 'hint-key', text: '按任意键跳过' }),
+        h('span', { class: 'hint-touch', text: '点击屏幕跳过' }),
+      ]),
     ]);
     this.show('battle', box);
 

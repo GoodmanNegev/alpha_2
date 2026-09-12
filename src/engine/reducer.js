@@ -12,7 +12,7 @@ import { MODE_CLASSIC } from '../data/mode.js';
 
 export function newGame(now = Date.now(), mode = MODE_CLASSIC) {
   const state = createInitialState(now, mode);
-  return runScript(state, introScript(), [{ type: 'msg', text: '按方向键移动，撞向物品拾取、撞向怪物战斗。' }]);
+  return runScript(state, introScript(), [{ type: 'msg', text: '点击地图或按方向键移动，撞向物品拾取、撞向怪物战斗。' }]);
 }
 
 export function dispatch(state, action) {

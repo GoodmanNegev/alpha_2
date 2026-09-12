@@ -117,20 +117,24 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
 
 .msg {
-  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%) translateY(10px);
-  max-width: 92%; padding: 6px 14px; border-radius: 8px;
+  position: absolute; left: 4%; right: 4%; bottom: 10px; z-index: 4;
+  padding: 6px 14px; border-radius: 8px;
   background: rgba(10, 9, 16, 0.88); border: 1px solid var(--border); color: var(--text);
-  font-size: 14px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; text-align: center;
+  font-size: 14px; opacity: 0; transition: opacity 0.2s; pointer-events: none; text-align: center;
 }
-.msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.msg.show { opacity: 1; }
+.msg, .msg * { pointer-events: none !important; }
 
 /* -------------------------------------------------------------- overlay -- */
 .overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 3%; background: rgba(0, 0, 0, 0.25); border-radius: 6px; }
 .overlay.hidden { display: none; }
 .overlay.top { align-items: flex-start; }
-.overlay:not(.hidden) ~ .msg { bottom: auto; top: 10px; transform: translateX(-50%) translateY(-10px); }
-.overlay:not(.hidden) ~ .msg.show { transform: translateX(-50%) translateY(0); }
-.overlay.top:not(.hidden) ~ .msg { top: auto; bottom: 10px; }
+.overlay[data-mode="say"], .overlay[data-mode="battle"] { cursor: pointer; }
+.hint-touch { display: none; }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 520px), (hover: none) and (pointer: coarse) {
+  .hint-key { display: none; }
+  .hint-touch { display: inline; }
+}
 
 .dialog {
   display: flex; gap: 12px; width: 100%; padding: 12px 14px;
@@ -283,10 +287,11 @@ html, body { height: 100%; overflow: hidden; min-width: 0; }
 .journey-footer { grid-area: footer; min-width: 0; align-items: center; font-size: 10px; }
 .latest-event { min-width: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
 .dpad { display: none; }
+.touch-guide { display: none; }
 [hidden] { display: none !important; }
 
 /* All dialogs use the viewport, not the shrinking map, as their boundary. */
-.overlay, .overlay.top { position: fixed; inset: 0; padding: 16px; z-index: 50; align-items: center; background: #080f16bb; border-radius: 0; }
+.overlay, .overlay.top { position: fixed; inset: 0; padding: 16px; z-index: 50; align-items: center; background: #080f16bb; border-radius: 0; touch-action: manipulation; }
 .overlay[data-mode="say"] { background: #08121b55; }
 .dialog, .battle, .panel-box { width: min(100%, 600px); max-height: calc(100dvh - 32px); margin: auto; flex: none; }
 .panel-box { overflow: visible; padding: 22px; box-shadow: 0 24px 80px #0009, inset 0 0 0 3px #101b20; }
@@ -349,8 +354,8 @@ button:disabled { opacity: .35; cursor: default; }
 @media (max-width: 760px) {
   .app {
     width: 100%; max-width: 100%; min-width: 0; padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
-    grid-template-columns: minmax(0,1fr); grid-template-rows: 40px 112px minmax(0,1fr) 48px 102px;
-    grid-template-areas: "header" "hud" "arena" "tools" "dpad"; gap: 6px; height: 100dvh;
+    grid-template-columns: minmax(0,1fr); grid-template-rows: 40px 112px minmax(0,1fr) 48px 20px;
+    grid-template-areas: "header" "hud" "arena" "tools" "guide"; gap: 6px; height: 100dvh;
   }
   .masthead { padding: 0 4px 6px; gap: 8px; }
   .brand { gap: 8px; }
@@ -376,18 +381,13 @@ button:disabled { opacity: .35; cursor: default; }
   .toolbar { gap: 6px; }
   .tool { padding: 8px 2px; gap: 4px; font-size: 12px; }
   .tool > span { font-size: 18px; }
-  .dpad { grid-area: dpad; display: flex; position: static; justify-content: space-between; align-items: center; padding: 0 18px; background: none; }
-  .dpad-cross { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 30px); gap: 3px; }
-  .dpad-cross button { touch-action: none; user-select: none; border: 1px solid #5a6b5b; background: #263831; border-radius: 5px; font-size: 15px; padding: 0; }
-  .dpad-cross button:active { background: var(--accent); }
-  .dpad-cross [data-dir="up"] { grid-column: 2; grid-row: 1; }
-  .dpad-cross [data-dir="left"] { grid-column: 1; grid-row: 2; }
-  .dpad-cross [data-dir="right"] { grid-column: 3; grid-row: 2; }
-  .dpad-cross [data-dir="down"] { grid-column: 2; grid-row: 3; }
-  .dpad-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .round { width: 58px; height: 58px; background: #8d713d; border: 1px solid #c2a162; border-radius: 50%; color: #fff2ce; font-weight: 700; cursor: pointer; }
-  .touch-hint { font-size: 9px; color: var(--dim); }
-  .overlay, .overlay.top { padding: 12px; }
+  .touch-guide {
+    grid-area: guide; display: block; margin: 0; text-align: center;
+    font-size: 11px; color: var(--dim); letter-spacing: 1px;
+  }
+  .dpad { display: none; }
+  .overlay, .overlay.top { padding: 0; }
+  .msg { top: 8px; bottom: auto; }
   .panel-box { padding: 16px; }
   .panel-title { font-size: 18px; padding-bottom: 8px; margin-bottom: 10px; }
   .dialog-text { font-size: 13px; }
@@ -415,7 +415,7 @@ button:disabled { opacity: .35; cursor: default; }
 @media (orientation: landscape) and (max-height: 520px) {
   .app { width: 100%; padding: 6px 10px; grid-template-columns: 160px minmax(0,1fr) 128px; grid-template-rows: 30px minmax(0,1fr); grid-template-areas: "header header header" "hud arena tools"; gap: 8px; }
   .brand h1 { font-size: 18px; }
-  .brand p, .masthead-note, .journey-footer, .dpad { display: none; }
+  .brand p, .masthead-note, .journey-footer, .dpad, .touch-guide { display: none; }
   .hud { display: flex; flex-direction: column; padding: 10px; align-self: center; gap: 0; }
   .hero-card { height: 30px; padding: 0; margin: 0 0 6px; }
   .hero-seal { display: none; }
@@ -431,6 +431,7 @@ button:disabled { opacity: .35; cursor: default; }
   .tool kbd { display: none; }
   .profile-heading { display: none; }
   .profile-stats { gap: 5px 8px; font-size: 11px; }
+  .overlay, .overlay.top { padding: 0; }
   .panel-box { padding: 12px 16px; }
   .panel-title { padding-bottom: 4px; margin-bottom: 6px; font-size: 16px; }
   .panel-title .close { min-height: 28px; min-width: 28px; }
